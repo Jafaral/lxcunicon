@@ -1,0 +1,125 @@
+#
+# Jafar Al-Gharaibeh
+# 09/29/2016
+#
+
+package LXC
+
+global LXC
+
+class LXC(
+    LXCCreate,
+    LXCStart,
+    LXCReboot,
+    LXCShutdown,# try gracefull shutdown
+    LXCStop, 	# try shutdown first, force stop if necessary
+    LXCDestroy,
+    LXCState,
+    LXCExist,
+    LXCFreeze,
+    LXCUnfreeze,
+    LXCClone,
+    LXCRename,
+    LXCInit,
+    version,
+    arch,
+    ErrorTable
+    )
+
+   method Exist(name)
+      return LXCExist(\name)
+   end
+
+   method Container(name)
+      return LXContainer(\name)
+   end
+
+   method Version()
+      return version
+   end
+
+   method Arch()
+      return arch
+   end
+
+   initially(path)
+      /path	   :="./lxcunicon.so"
+      ((LXCCreate  := loadfunc(path, "create")),
+      (LXCStart    := loadfunc(path, "start")),
+      (LXCShutdown := loadfunc(path, "shutdown")),
+      (LXCReboot := loadfunc(path, "reboot")),
+      (LXCStop 	   := loadfunc(path, "stop")),
+      (LXCFreeze   := loadfunc(path, "freeze")),
+      (LXCUnfreeze := loadfunc(path, "unfreeze")),
+      #(LXCClone   := loadfunc(path, "clone")),
+      #(LXCRename  := loadfunc(path, "Rename")),
+      (LXCDestroy  := loadfunc(path, "destroy")),
+      (LXCState    := loadfunc(path, "state")),
+      (LXCExist    := loadfunc(path, "exist")),
+      (LXCInit     := loadfunc(path, "lxcinit"))) |
+         stop("can't load LXC library from ", image(path))
+      
+      ErrorTable := table()
+      LXC := self
+      version := LXC.LXCInit()
+      
+      # The default architecture 
+      /arch := (&features ?(="Arch " & 
+            (if ="x86_" then
+               if ="32" then
+                  "i386"
+              else
+                  "amd64"
+            else if ="arm_" then
+               if ="32" then
+                  "armhf"
+               else
+                  "arm64")))
+      
+end
+
+class LXContainer(
+            name,
+            dist,
+            release,
+            arch,
+            handle,
+            lasterrorcode
+            )
+   method Create(d, r, a)
+      dist := \d; release := \r; arch := \a
+      return handle := LXC.LXCCreate(name, dist, release, arch)
+   end
+   method Exist()
+      return handle := LXC.LXCExist(name)
+   end
+   
+   method Start()
+      return LXC.LXCStart(\handle | name)
+   end
+   
+   method Reboot()
+      return LXC.LXCStart(\handle | name)
+   end
+   method State()
+      return LXC.LXCState(handle)
+   end
+   method Shutdown(timeout:30)
+      return LXC.LXCShutdown(handle, timeout)
+   end
+   method Stop(timeout:30)
+      return LXC.LXCStop(handle, timeout)
+   end   
+   method Destroy()
+      return LXC.LXCDestroy(handle)
+   end
+
+   initially
+      initial \LXC | LXC()
+      # set the defaults to some common values
+      \name | stop("A container must have a name")
+      /dist := "ubuntu"
+      /release := "xenial"
+      # use a default arch that matches the current Unicon binaries
+      /arch := LXC.Arch()
+ end

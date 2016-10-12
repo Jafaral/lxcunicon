@@ -1,0 +1,43 @@
+import LXC
+
+procedure main(arg)
+   local c, name, we_did_it
+
+    name := arg[1] | "uniconvm"
+   
+   write("Initialize LXC library...")
+   LXC("./lxcunicon.so")
+
+   c := LXC.Container(name)
+
+   if c.Exist() then
+      write("container ", name, " already exists")
+   else{
+      write("creating a container named ", name, "...")
+      c.Create() | stop("can't create container ", name)
+      we_did_it := 1
+      }
+   
+   write("booting ", name, "...");
+   c.Start() | stop("couldn't do it")
+   
+   write("loop for 20 seconds report the state every 5 seconds")
+   every 1 to 4 do {
+      write(c.name, " is ", image(c.State()))
+      delay(5000)
+     }
+
+   # stop the conainter, could also use shutdown()
+   c.Stop()
+
+   # report the container state
+   write(c.name, " is ", image(c.State()))
+
+   if (\we_did_it) then{ # make sure we don't accidentally
+                        # delete someone else's container
+      write("Time for cleanup, destroying ", name)
+      c.Destroy() | stop("couldn't destroy ", name)
+     }      
+   
+   write("All OK, Goodbye!")
+end
