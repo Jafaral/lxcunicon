@@ -3,8 +3,16 @@
 echo ""
 echo "#####################################################"
 echo "Setup LXC Environemt  luxify 0.2 - Jafar Al-Gharaibeh"
-echo "Modified: 9/28/2016"
-echo "GPLv2"
+echo ""
+echo "Run this script once to setup the machine with LXC"
+echo "configuration if you've never used lxc on the same"
+echo "machine. Currently supports only Debian based systems"
+echo "Tested on Ubuntu 16.04"
+echo ""
+echo "This scripts targets and tested with  unprivilied "
+echo "containers only, i.e, you don't need to be root to" 
+echo "run containers. However, parts of this scripts will"
+echo "ask or sudo access fo initial setup"
 echo "#####################################################"
 echo ""
 
@@ -97,6 +105,11 @@ EOF
 
 fi
 
+exit(0)
+# on Ubuntu 16.04 with LXC 2.0 the following is not needed anymore since
+# a brigde is automatically configured when lxc is installed.
+# 
+
 echo "Making sure we a network bridge set up..."
 grep "auto $BRDGNAME" $IFACEFILE
 if [ "$?" -ne "0" ]; then
@@ -107,7 +120,7 @@ if [ "$?" -ne "0" ]; then
 # LXC-Config
 auto $BRDGNAME
 iface $BRDGNAME inet static
-	address 10.200.0.2
+	address 10.0.4.2
 	netmask 255.255.255.0
 	bridge_ports $device
 	bridge_stp off
