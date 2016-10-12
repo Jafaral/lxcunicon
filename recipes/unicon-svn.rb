@@ -9,6 +9,7 @@ lxc 'unicon-svn' do
     package 'subversion build-essential emacs-nox htop' do
       retries 5
     end
+    directory '/opt/unicon'
     subversion 'Unicon' do
       repository 'http://svn.code.sf.net/p/unicon/code/trunk/unicon'
       revision 'HEAD'
