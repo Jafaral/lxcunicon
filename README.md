@@ -8,7 +8,7 @@ Example:
 import LXC
 procedure main(arg)
     name := arg[1] | "unicon-tainer"
-   LXC("./lxcunicon.so")     # initialize the libaray
+   LXC("./lxcunicon.so")     # initialize the library
    c := LXC.Container(name)  # initialize a Unicon container object
    if c.Exist() then
       stop("container ", name, " already exists")
