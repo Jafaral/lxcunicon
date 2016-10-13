@@ -2,10 +2,11 @@ require 'chef/lxc'
 
 lxc 'unicon-svn' do
   template 'download' do
-    args ['-d', 'ubuntu', '-r', 'xenial', '-a', 'armhf']
+    args ['-d', 'ubuntu', '-r', 'xenial', '-a', 'amd64']
   end
   
   recipe do
+    execute("apt-get update")    
     package 'subversion build-essential emacs-nox htop' do
       retries 5
     end
