@@ -1,3 +1,10 @@
+# Create a container called unicon-svn
+# svn checkout and build a fresh copy of Unicon inside
+# To use you have to get lxc and chef. 
+# On Ubuntu apt-get chef. More details in luxify shell scrip one level up
+# Apply the recipe by running: 
+# chef-apply unicon-svn.rb
+#
 require 'chef/lxc'
 
 lxc 'unicon-svn' do
