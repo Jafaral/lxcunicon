@@ -131,7 +131,4 @@ EOF
 #   sudo /etc/init.d/networking restart
 fi
 
-#echo Get chef-lxc
-#sudo gem install ruby-lxc
-#sudo gem install chef-lxc
-
+# The End!
