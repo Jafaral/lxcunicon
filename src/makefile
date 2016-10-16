@@ -18,7 +18,7 @@ CSRC=$(PKGNAME).c
 
 TARGET=$(SAMPLES) 
 
-all: $(TARGET) $(PKGNAME).so $(UFILES)
+all: $(TARGET) SO
 
 pure:
 	$(MAKE) clean
@@ -26,11 +26,11 @@ pure:
 
 samples: $(SAMPLES)
 
-hellolxc: SO  $(UFILES)
-	 $(UC) -u -o hellolxc $(UFILES)
+hellolxc: SO  $(UFILES)  hellolxc.u
+	 $(UC) -u -o hellolxc hellolxc.u $(UFILES)
 
-SO: $(SSRC)
-	gcc -std=c99 -shared -g -O0 -fpic -o $(PKGNAME).so $(PKGNAME).c -llxc
+SO: $(CSRC)
+	gcc -D_GNU_SOURCE -std=c11 -shared -g -O0 -fpic -o $(PKGNAME).so $(PKGNAME).c -llxc
 
 %.u:	%.icn
 	 $(UC) $(UFLAGS) $<

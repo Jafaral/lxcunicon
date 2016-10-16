@@ -1,7 +1,7 @@
 import LXC
 
 procedure main(arg)
-   local c, name, we_did_it
+   local c, name, we_did_it, cmd, cmds
 
     name := arg[1] | "uniconvm"
    
@@ -20,9 +20,21 @@ procedure main(arg)
    
    write("booting ", name, "...");
    c.Start() | stop("couldn't do it")
+
+   write("run some commands inside ", name)
+   cmds := ["uname",
+            "uname -a",
+            "uname -r" ,
+            "hostname",
+            "whoami",
+            "pwd",
+            "apt-get install htop"]
+   
+   every writes(left(cmd:=!cmds, 12), ": ") & c.Attach(cmd)
+   
    
    write("loop for 20 seconds report the state every 5 seconds")
-   every 1 to 4 do {
+   every 1 to 1 do {
       write(c.name, " is ", image(c.State()))
       delay(5000)
      }

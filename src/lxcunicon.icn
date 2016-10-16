@@ -10,6 +10,7 @@ global LXC
 class LXC(
     LXCCreate,
     LXCStart,
+    LXCAttach,
     LXCReboot,
     LXCShutdown,# try gracefull shutdown
     LXCStop, 	# try shutdown first, force stop if necessary
@@ -46,6 +47,7 @@ class LXC(
       /path	   :="./lxcunicon.so"
       ((LXCCreate  := loadfunc(path, "create")),
       (LXCStart    := loadfunc(path, "start")),
+      (LXCAttach    := loadfunc(path, "attach")),
       (LXCShutdown := loadfunc(path, "shutdown")),
       (LXCReboot := loadfunc(path, "reboot")),
       (LXCStop 	   := loadfunc(path, "stop")),
@@ -90,16 +92,23 @@ class LXContainer(
       dist := \d; release := \r; arch := \a
       return handle := LXC.LXCCreate(name, dist, release, arch)
    end
+   
    method Exist()
       return handle := LXC.LXCExist(name)
    end
    
    method Start()
-      return LXC.LXCStart(\handle | name)
+      /handle := name
+      return handle := LXC.LXCStart(handle)
+   end
+
+   method Attach(arg)
+      string(arg) & (arg || "X")
+      return LXC.LXCAttach(handle, arg)
    end
    
    method Reboot()
-      return LXC.LXCStart(\handle | name)
+      return LXC.LXCReboot(handle)
    end
    method State()
       return LXC.LXCState(handle)
