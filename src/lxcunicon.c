@@ -265,9 +265,9 @@ attach(int argc, descriptor *argv){
   char **extra_keep = NULL;
   ssize_t extra_keep_size = 0;
   int progargc;
-  FILE *fp;
+  /* FILE *fp;
   fp=fopen("./test.txt", "w");
-
+  */
   if (argc < 1) Error(130);
   GETCONTAINER(argv[1], id, c);
 
@@ -289,7 +289,7 @@ attach(int argc, descriptor *argv){
 		.extra_env_vars = NULL,
 		.extra_keep_env = NULL,
 		.stdin_fd 	= 0,
-		.stdout_fd 	= fileno(fp),
+		.stdout_fd 	= 1 /* fileno(fp) */ ,
 		.stderr_fd 	= 2,
   };
 
@@ -298,7 +298,7 @@ attach(int argc, descriptor *argv){
   if (ret>=0)
     ret = lxc_wait_for_pid_status(pid);
 
-  fclose(fp);
+  //fclose(fp);
   while(progargc){
     free(command.argv[--progargc]);
   }
