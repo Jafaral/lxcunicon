@@ -241,11 +241,23 @@ reboot(int argc, descriptor *argv){
   RetInteger(id);
 }
 
+
+#define GETFILENO(i, fno) do if (i <= argc) {	\
+    if (Type(argv[i]) == T_File)		\
+      fno = fileno(FileVal(argv[i]));		\
+    else if (Type(argv[i]) != T_Null)	 	\
+      ArgError(i, 105);				\
+  } while (0)
+
+
 /*
  * From rsys.r
  * convert a string to an argv format
  */
 extern int CmdParamToArgv(char *s, char ***avp, int dequote);
+
+/* lxc utility function */
+extern int lxc_wait_for_pid_status(pid_t pid);
 
 word
 attach(int argc, descriptor *argv){
@@ -265,13 +277,20 @@ attach(int argc, descriptor *argv){
   char **extra_keep = NULL;
   ssize_t extra_keep_size = 0;
   int progargc;
-  /* FILE *fp;
-  fp=fopen("./test.txt", "w");
-  */
+  int stdi=0, stdo=1, stde=2; 
+
   if (argc < 1) Error(130);
   GETCONTAINER(argv[1], id, c);
 
+  // the command
   ArgString(2);
+
+  // check if I/O is redirected
+  GETFILENO(3, stdi);
+  GETFILENO(4, stdo);
+  GETFILENO(5, stde);
+
+  //
 
   progargc = CmdParamToArgv(StringVal(argv[2]) , &command.argv, 1);
   //free(command.argv[progargc-1]);
@@ -288,9 +307,9 @@ attach(int argc, descriptor *argv){
 		.env_policy 	=  LXC_ATTACH_KEEP_ENV,
 		.extra_env_vars = NULL,
 		.extra_keep_env = NULL,
-		.stdin_fd 	= 0,
-		.stdout_fd 	= 1 /* fileno(fp) */ ,
-		.stderr_fd 	= 2,
+		.stdin_fd 	= stdi,
+		.stdout_fd 	= stdo,
+		.stderr_fd 	= stde,
   };
 
   
@@ -298,7 +317,6 @@ attach(int argc, descriptor *argv){
   if (ret>=0)
     ret = lxc_wait_for_pid_status(pid);
 
-  //fclose(fp);
   while(progargc){
     free(command.argv[--progargc]);
   }

@@ -1,7 +1,7 @@
 import LXC
 
 procedure main(arg)
-   local c, name, we_did_it, cmd, cmds
+   local c, name, we_did_it, cmd, cmds, fout
 
     name := arg[1] | "uniconvm"
    
@@ -21,6 +21,7 @@ procedure main(arg)
    write("booting ", name, "...");
    c.Start() | stop("couldn't do it")
 
+   
    write("run some commands inside ", name)
    cmds := ["uname",
             "uname -a",
@@ -31,10 +32,14 @@ procedure main(arg)
             "apt-get install htop"]
    
    every writes(left(cmd:=!cmds, 12), ": ") & c.Attach(cmd)
-   
+
+   write("\n\nStdout redirection: 'lsb_release  -a' output is going to ", name, ".log")
+   fout := open(name || ".log", "w") | stop("failed to open ", name, ".log")
+   c.Attach("lsb_release -a", &null, fout) # &null => no change to stdin. stdout is redirected. 
+   close(fout)
    
    write("loop for 20 seconds report the state every 5 seconds")
-   every 1 to 1 do {
+   every 1 to 4 do {
       write(c.name, " is ", image(c.State()))
       delay(5000)
      }

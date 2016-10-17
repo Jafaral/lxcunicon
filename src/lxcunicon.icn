@@ -102,9 +102,9 @@ class LXContainer(
       return handle := LXC.LXCStart(handle)
    end
 
-   method Attach(arg)
-      string(arg) & (arg || "X")
-      return LXC.LXCAttach(handle, arg)
+   method Attach(arg, stdi, stdo, stde)
+      string(arg) & (arg || " X")
+      return LXC.LXCAttach(handle, arg, stdi, stdo, stde)
    end
    
    method Reboot()
