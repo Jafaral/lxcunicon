@@ -3,6 +3,8 @@
 ////////////////////
 #include "icall.h"
 #include <lxc/lxccontainer.h>
+#include <string.h>
+#include <stdio.h>
 
 /*
  * Error Codes
@@ -237,4 +239,73 @@ reboot(int argc, descriptor *argv){
     Fail;
   }
   RetInteger(id);
+}
+
+/*
+ * From rsys.r
+ * convert a string to an argv format
+ */
+extern int CmdParamToArgv(char *s, char ***avp, int dequote);
+
+word
+attach(int argc, descriptor *argv){
+  struct lxc_container *c;
+  word id;
+  int ret;
+  pid_t pid;
+  lxc_attach_options_t attach_options /* = LXC_ATTACH_OPTIONS_DEFAULT */;
+  lxc_attach_command_t command;
+  int elevated_privileges = 0;
+  signed long new_personality = 0;
+  int namespace_flags = -1;
+  int remount_sys_proc = 0;
+  lxc_attach_env_policy_t env_policy = LXC_ATTACH_KEEP_ENV;
+  char **extra_env = NULL;
+  ssize_t extra_env_size = 0;
+  char **extra_keep = NULL;
+  ssize_t extra_keep_size = 0;
+  int progargc;
+  FILE *fp;
+  fp=fopen("./test.txt", "w");
+
+  if (argc < 1) Error(130);
+  GETCONTAINER(argv[1], id, c);
+
+  ArgString(2);
+
+  progargc = CmdParamToArgv(StringVal(argv[2]) , &command.argv, 1);
+  //free(command.argv[progargc-1]);
+  command.argv[progargc] = NULL;
+  command.program = command.argv[0];
+  
+  attach_options =  (lxc_attach_options_t ){
+		.attach_flags 	=  LXC_ATTACH_DEFAULT,
+		.namespaces 	= -1,
+		.personality 	= -1,
+		.initial_cwd 	= NULL,
+		.uid 		= (uid_t)-1,
+		.gid 		= (gid_t)-1,
+		.env_policy 	=  LXC_ATTACH_KEEP_ENV,
+		.extra_env_vars = NULL,
+		.extra_keep_env = NULL,
+		.stdin_fd 	= 0,
+		.stdout_fd 	= fileno(fp),
+		.stderr_fd 	= 2,
+  };
+
+  
+  ret = c->attach(c, lxc_attach_run_command, &command, &attach_options, &pid);
+  if (ret>=0)
+    ret = lxc_wait_for_pid_status(pid);
+
+  fclose(fp);
+  while(progargc){
+    free(command.argv[--progargc]);
+  }
+  free(command.argv);
+  
+  if (ret>=0)
+    RetInteger(ret);
+  else
+    Fail;
 }
