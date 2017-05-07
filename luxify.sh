@@ -105,7 +105,7 @@ EOF
 
 fi
 
-exit(0)
+exit 0
 # on Ubuntu 16.04 with LXC 2.0 the following is not needed anymore since
 # a brigde is automatically configured when lxc is installed.
 # 
